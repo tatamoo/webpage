@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Simple Memo</title>
+  <style>
+    body{font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial; background:#f3f4f6;margin:0;padding:24px}
+    .container{max-width:900px;margin:0 auto}
+    header{display:flex;justify-content:space-between;align-items:center}
+    .card{background:#fff;padding:16px;border-radius:12px;box-shadow:0 6px 18px rgba(15,23,42,0.06);margin-top:16px}
+    input,textarea{width:100%;padding:8px;border-radius:8px;border:1px solid #e6e9ef}
+    button{background:#2563eb;color:#fff;padding:8px 12px;border-radius:8px;border:0;cursor:pointer}
+    .note{padding:10px;border-radius:8px;border:1px solid #e5e7eb;margin-bottom:8px}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Simple Memo</h1>
+    </header>
+
+    <div class="card">
+      <h3>Account</h3>
+
+      <!-- 로그인 폼 -->
+      <div id="authPane">
+        <input id="email" type="email" placeholder="you@example.com" />
+        <input id="password" type="password" placeholder="password" style="margin-top:8px" />
+        <div style="margin-top:8px">
+          <button id="signupBtn">가입하기</button>
+          <button id="signinBtn">로그인</button>
+        </div>
+      </div>
+
+      <!-- 로그인 후 UI -->
+      <div id="welcomePane" style="display:none">
+        <p id="welcomeText" style="font-size:16px;font-weight:600;margin:0 0 8px 0"></p>
+        <button id="signoutBtn" style="background:#ef4444">로그아웃</button>
+      </div>
+    </div>
+
+    <div class="card" id="editor" style="display:none">
+      <h3>Create Note</h3>
+      <input id="title" placeholder="Title" />
+      <textarea id="content" rows="6" style="margin-top:8px" placeholder="Write your note..."></textarea>
+      <div style="margin-top:8px">
+        <button id="saveBtn">저장</button>
+        <button id="refreshBtn" style="background:#6b7280">Refresh</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Your Notes</h3>
+      <div id="notesList">Sign in to view notes</div>
+    </div>
+
+    <footer style="margin-top:12px;color:#6b7280;font-size:13px">Backend: Firebase Authentication + Firestore (plaintext storage)</footer>
+  </div>
+
+  <script type="module">
+    // ---------------------------
+    // TODO: Put your firebaseConfig here (Firebase Console -> Project settings -> Web App)
+    // ---------------------------
+    const firebaseConfig = {
+      apiKey: "AIzaSyDes2PpNExneb_nr5G_aT2KmB3pwWhY83M",
+      authDomain: "computer-92f25.firebaseapp.com",
+      projectId: "computer-92f25",
+      storageBucket: "computer-92f25.firebasestorage.app",
+      messagingSenderId: "376599013841",
+      appId: "1:376599013841:web:f14625a5952bf28fa358f0",
+      measurementId: "G-KEK2HX8DRR"
+    };
+
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js';
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js';
+    import { getFirestore, collection, addDoc, query, where, getDocs, serverTimestamp, deleteDoc, doc } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js';
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // UI
+    const emailEl = document.getElementById('email');
+    const passwordEl = document.getElementById('password');
+    const signupBtn = document.getElementById('signupBtn');
+    const signinBtn = document.getElementById('signinBtn');
+    const signoutBtn = document.getElementById('signoutBtn');
+    const userBox = document.getElementById('userBox');
+    const editor = document.getElementById('editor');
+    const titleEl = document.getElementById('title');
+    const contentEl = document.getElementById('content');
+    const saveBtn = document.getElementById('saveBtn');
+    const refreshBtn = document.getElementById('refreshBtn');
+    const notesList = document.getElementById('notesList');
+
+    signupBtn.addEventListener('click', async ()=>{
+      const email = emailEl.value.trim();
+      const pw = passwordEl.value;
+      if(!email||!pw){alert('fill email & password');return}
+      try{ await createUserWithEmailAndPassword(auth,email,pw); alert('Signed up. Now sign in.'); }
+      catch(e){console.error(e);alert(e.message)}
+    });
+
+    signinBtn.addEventListener('click', async ()=>{
+      const email = emailEl.value.trim();
+      const pw = passwordEl.value;
+      if(!email||!pw){alert('fill email & password');return}
+      try{ await signInWithEmailAndPassword(auth,email,pw); passwordEl.value=''; }
+      catch(e){console.error(e);alert(e.message)}
+    });
+
+    signoutBtn.addEventListener('click', async ()=>{ await signOut(auth); });
+
+    saveBtn.addEventListener('click', async ()=>{
+      const user = auth.currentUser; if(!user){alert('not signed in');return}
+      const title = titleEl.value || 'Untitled';
+      const content = contentEl.value || '';
+      try{
+        await addDoc(collection(db,'notes'),{ ownerUid:user.uid, title, content, createdAt: serverTimestamp() });
+        titleEl.value=''; contentEl.value=''; loadNotes();
+      }catch(e){console.error(e);alert('Error saving: '+e.message)}
+    });
+
+    refreshBtn.addEventListener('click', loadNotes);
+
+    async function loadNotes(){
+      const user = auth.currentUser; if(!user){notesList.innerHTML='Sign in to view notes'; return}
+      notesList.innerHTML='Loading...';
+      const q = query(collection(db,'notes'), where('ownerUid','==',user.uid));
+      const snap = await getDocs(q);
+      if(snap.empty){notesList.innerHTML='No notes yet'; return}
+      let html='';
+      snap.docs.forEach(d=>{
+        const data = d.data();
+        html += `<div class="note"><strong>${escapeHtml(data.title||'Untitled')}</strong>
+                 <div style="margin-top:6px">${escapeHtml(data.content||'')}</div>
+                 <div style="margin-top:8px"><button data-id="${d.id}" class="delBtn" style="background:#ef4444">Delete</button></div>
+                 </div>`;
+      });
+      notesList.innerHTML = html;
+      // attach delete handlers
+      document.querySelectorAll('.delBtn').forEach(btn=>btn.addEventListener('click', async e=>{
+        const id = e.currentTarget.getAttribute('data-id');
+        if(!confirm('Delete this note?')) return;
+        await deleteDoc(doc(db,'notes',id)); loadNotes();
+      }));
+    }
+
+    onAuthStateChanged(auth, user => {
+      const authPane = document.getElementById('authPane');
+      const welcomePane = document.getElementById('welcomePane');
+      const welcomeText = document.getElementById('welcomeText');
+
+      if (user) {
+        authPane.style.display = 'none';
+        welcomePane.style.display = 'block';
+        welcomeText.textContent = `안녕하세요, ${user.email}님!`;
+        editor.style.display = 'block';
+        loadNotes();
+      } else {
+        authPane.style.display = 'block';
+        welcomePane.style.display = 'none';
+        editor.style.display = 'none';
+        notesList.innerHTML = 'Sign in to view notes';
+      }
+    });
+
+    function escapeHtml(s){ return String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;'); }
+
+    // NOTE: This file intentionally does NOT implement client-side encryption or advanced security.
+    // It's for quick demo/assignment submission only. Do NOT use in production.
+
+  </script>
+</body>
+</html>
