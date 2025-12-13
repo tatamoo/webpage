@@ -68,26 +68,62 @@
     onAuthStateChanged
   } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js';
 
+  // 🔹 DOM 요소 다시 선언
+  const emailEl = document.getElementById('email');
+  const passwordEl = document.getElementById('password');
+  const signupBtn = document.getElementById('signupBtn');
+  const signinBtn = document.getElementById('signinBtn');
+  const signoutBtn = document.getElementById('signoutBtn');
+
+  const title = document.getElementById('title');
+  const content = document.getElementById('content');
+  const notesList = document.getElementById('notesList');
+  const saveBtn = document.getElementById('saveBtn');
+
   let cryptoPassword = '';
 
-  document.getElementById('saveBtn').onclick = async () => {
+  // 🔹 회원가입
+  signupBtn.onclick = async () => {
+    await createUserWithEmailAndPassword(
+      auth,
+      emailEl.value,
+      passwordEl.value
+    );
+  };
+
+  // 🔹 로그인
+  signinBtn.onclick = async () => {
+    await signInWithEmailAndPassword(
+      auth,
+      emailEl.value,
+      passwordEl.value
+    );
+  };
+
+  // 🔹 로그아웃
+  signoutBtn.onclick = async () => {
+    await signOut(auth);
+    cryptoPassword = '';
+  };
+
+  // 🔹 메모 저장
+  saveBtn.onclick = async () => {
     if (!cryptoPassword) {
       cryptoPassword = prompt('암호화 비밀번호 입력');
     }
-    await saveNote(
-      title.value,
-      content.value,
-      cryptoPassword
-    );
-    loadNotes(cryptoPassword, notesList);
+    await saveNote(title.value, content.value, cryptoPassword);
+    await loadNotes(cryptoPassword, notesList);
   };
 
   onAuthStateChanged(auth, user => {
     if (user) {
       loadNotes(cryptoPassword, notesList);
+    } else {
+      notesList.textContent = 'Sign in to view notes';
     }
   });
 </script>
+
 
 </body>
 </html>
