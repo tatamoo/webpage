@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Simple Memo</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Simple Memo</h1>
+    </header>
+
+    <div class="card">
+      <h3>Account</h3>
+
+      <!-- 로그인 폼 -->
+      <div id="authPane">
+        <input id="email" type="email" placeholder="you@example.com" />
+        <input id="password" type="password" placeholder="password" style="margin-top:8px" />
+        <div style="margin-top:8px">
+          <button id="signupBtn">가입하기</button>
+          <button id="signinBtn">로그인</button>
+        </div>
+      </div>
+
+      <!-- 로그인 후 UI -->
+      <div id="welcomePane" style="display:none">
+        <p id="welcomeText" style="font-size:16px;font-weight:600;margin:0 0 8px 0"></p>
+        <button id="signoutBtn" style="background:#ef4444">로그아웃</button>
+      </div>
+    </div>
+
+    <div class="card" id="editor" style="display:none">
+      <h3>Create Note</h3>
+      <input id="title" placeholder="Title" />
+      <textarea id="content" rows="6" style="margin-top:8px" placeholder="Write your note..."></textarea>
+      <div style="margin-top:8px">
+        <button id="saveBtn">저장</button>
+        <button id="refreshBtn" style="background:#6b7280">Refresh</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Your Notes</h3>
+      <div id="notesList">Sign in to view notes</div>
+    </div>
+
+    <footer style="margin-top:12px;color:#6b7280;font-size:13px">Backend: Firebase Authentication + Firestore (AES-GCM encrypted storage)</footer>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

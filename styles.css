@@ -1,0 +1,42 @@
+body{
+  font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial;
+  background:#f3f4f6;
+  margin:0;
+  padding:24px
+}
+.container{
+  max-width:900px;
+  margin:0 auto
+}
+header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center
+}
+.card{
+  background:#fff;
+  padding:16px;
+  border-radius:12px;
+  box-shadow:0 6px 18px rgba(15,23,42,0.06);
+  margin-top:16px
+}
+input,textarea{
+  width:100%;
+  padding:8px;
+  border-radius:8px;
+  border:1px solid #e6e9ef
+}
+button{
+  background:#2563eb;
+  color:#fff;
+  padding:8px 12px;
+  border-radius:8px;
+  border:0;
+  cursor:pointer
+}
+.note{
+  padding:10px;
+  border-radius:8px;
+  border:1px solid #e5e7eb;
+  margin-bottom:8px
+}
