@@ -13,12 +13,12 @@
     </header>
 
     <div class="card">
-      <h3>Account</h3>
+      <h3>계정</h3>
 
       <!-- 로그인 폼 -->
       <div id="authPane">
-        <input id="email" type="email" placeholder="you@example.com" />
-        <input id="password" type="password" placeholder="password" style="margin-top:8px" />
+        <input id="email" type="email" placeholder="아이디@example.com" />
+        <input id="password" type="password" placeholder="비밀번호" style="margin-top:8px" />
         <div style="margin-top:8px">
           <button id="signupBtn">가입하기</button>
           <button id="signinBtn">로그인</button>
@@ -33,21 +33,25 @@
     </div>
 
     <div class="card" id="editor" style="display:none">
-      <h3>Create Note</h3>
-      <input id="title" placeholder="Title" />
-      <textarea id="content" rows="6" style="margin-top:8px" placeholder="Write your note..."></textarea>
+      <h3>메모 입력</h3>
+      <input id="title" placeholder="제목" />
+      <textarea id="content" rows="6" style="margin-top:8px" placeholder="내용을 입력하세요"></textarea>
       <div style="margin-top:8px">
         <button id="saveBtn">저장</button>
-        <button id="refreshBtn" style="background:#6b7280">Refresh</button>
+        
       </div>
     </div>
 
     <div class="card">
-      <h3>Your Notes</h3>
-      <div id="notesList">Sign in to view notes</div>
+      <div class="card-header">
+        <h3 class="title">목록</h3>
+        <button id="refreshBtn" class="icon-btn" aria-label="새로고침">
+         ⟳
+        </button>
+      </div>
+      <div id="notesList">로그인이 필요합니다</div>
     </div>
 
-    <footer style="margin-top:12px;color:#6b7280;font-size:13px">Backend: Firebase Authentication + Firestore (AES-GCM encrypted storage)</footer>
   </div>
 
   <script type="module" src="app.js"></script>
